@@ -56,7 +56,6 @@ export default {
          */
         if (typeof item !== "object" || item === null) {
           responses.push({
-            webhook: item,
             status: 400,
             body: "Invalid webhook"
           });
@@ -64,7 +63,6 @@ export default {
         // url 必填，判断 url 是否存在
         if (!item.url) {
           responses.push({
-            webhook: item,
             status: 400,
             body: "Invalid webhook, missing url"
           });
@@ -72,7 +70,6 @@ export default {
         // 判断 url 是否为 str
         if (typeof item.url !== "string") {
           responses.push({
-            webhook: item,
             status: 400,
             body: "Invalid webhook, url must be string"
           });
@@ -83,11 +80,15 @@ export default {
           headers: item.headers || {"Content-Type": "application/json"},
           body: JSON.stringify(item.body) || null
         });
+        let responseBody = null;
+        try {
+          responseBody = await response.json();
+        } catch (e) {
+          responseBody = await response.text();
+        }
         responses.push({
-          webhook: item,
           status: response.status,
-          headers: Object.fromEntries(response.headers.entries()),
-          body: await response.text()
+          body: responseBody
         })
       }
       return jsonResponse(responses);
